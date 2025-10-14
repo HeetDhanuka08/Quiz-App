@@ -1,52 +1,53 @@
-# 🧠 Quiz Wizard
+# 🎯 Quiz Wizard
 
-A modern, interactive quiz application with beautiful glass-morphism design and smooth animations.
+A simple and interactive quiz application built with HTML, CSS, and JavaScript.
 
 ## ✨ Features
 
-- **10 Question Categories** - Arts & Literature, Film & TV, Geography, History, Music, and more
-- **Customizable Length** - Choose 5, 10, 15, or 20 questions
-- **Real-time Scoring** - Instant feedback and beautiful results display
-- **Responsive Design** - Works perfectly on desktop, tablet, and mobile
-- **Modern UI** - Glass-morphism effects with gradient animations
+- 📝 Interactive multiple-choice questions
+- 🎯 Score tracking
+- ✅ Immediate feedback on answers
+- 📱 Responsive design
+- 🎨 Clean and user-friendly interface
 
-## 🚀 Quick Start
+## 🛠️ Technologies Used
 
-1. **Clone or Download** the project files
-2. **Open** `index.html` in any modern web browser
-3. **Start Playing** - No installation or setup required!
+- 🌐 HTML5
+- 🎨 CSS3
+- ⚡ JavaScript
 
-## 📁 Files
+## 🚀 Setup
 
-- `index.html` - Main HTML structure
-- `style.css` - Modern CSS styling
-- `script.js` - Quiz functionality
-- `questions.js` - Question database (2000+ questions)
-
-## 🎨 Design
-
-- **Colors**: Purple-blue gradient theme
-- **Font**: Inter (clean, modern typography)
-- **Animations**: Smooth hover effects and transitions
-- **Layout**: Glass-morphism with backdrop blur
-
-## 🔧 Customization
-
-Add new questions in `questions.js`:
-
-```javascript
-{
-    question: "Your question?",
-    options: ["A", "B", "C", "D"],
-    correct: 0,
-    category: "your_category"
-}
+1. Clone the repository:
+```bash
+git clone https://github.com/HeetDhanuka08/Quiz-App.git
 ```
 
-## 📱 Browser Support
+2. Open `index.html` in your web browser.
 
-Chrome, Firefox, Safari, Edge (modern versions)
+## 📖 Usage
 
----
+- 🔍 Select your answer from the multiple-choice options
+- ⚡ Get immediate feedback on your answer
+- 🏆 View your final score at the end of the quiz
 
-**Built with HTML, CSS, and JavaScript** 
+## 📁 Project Structure
+
+```
+Quiz-App/
+├── index.html      # Main HTML file
+├── style.css       # Stylesheet
+├── script.js       # Main JavaScript file
+└── questions.js    # Question bank
+```
+
+## 🤝 Contributing
+
+Feel free to fork this repository and submit pull requests to contribute to this project.
+
+## 📄 License
+
+This project is open source and freely available for educational purposes, personal learning . You're welcome to:
+- Use it for learning and practice
+- Modify it for your own educational needs
+- Share it with proper attribution
