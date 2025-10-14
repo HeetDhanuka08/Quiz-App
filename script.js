@@ -1,6 +1,6 @@
 const form = document.querySelector('.user-form');
 const userName = document.getElementById('user-name');
-const quesCountButtons = document.querySelectorAll('.ques-count-buttons button'); // Get all buttons in the question count section in the form of a NodeList
+const quesCountButtons = document.querySelectorAll('.ques-count-buttons button');
 const quesCategory = document.getElementById('ques-category');
 const container = document.querySelector('.container');
 const quesContainer = document.querySelector('.ques-container');
@@ -9,257 +9,312 @@ container.style.transform = 'translateZ(20px)';
 quesContainer.style.transform = 'translateZ(20px)';
 
 let userNameValue = '';
-let selectedQuestionCount = 5; // Default question count
-let quesCategoryValue = 'mixed'; // Default question category
+let selectedQuestionCount = 10;
+let quesCategoryValue = 'mixed';
 let currentQuestionIndex = 0;
 let score = 0;
 let questions = [];
 
-// Set default selected for 5 questions
+// API Configuration
+const API_BASE_URL = 'https://opentdb.com/api.php';
+const CATEGORY_MAP = {
+    'mixed': '',
+    'general_knowledge': 9, // General Knowledge
+    'books': 10, //  Books
+    'film': 11, //  Film
+    'music': 12, //  Music
+    'musicals_theatres': 13, //  Musicals & Theatres
+    'television': 14, //  Television
+    'video_games': 15, //  Video Games
+    'board_games': 16, //  Board Games
+    'science_nature': 17, // Science & Nature
+    'science_computers': 18, //  Computers
+    'science_mathematics': 19, //  Mathematics
+    'mythology': 20, // Mythology
+    'sports': 21, // Sports
+    'geography': 22, // Geography
+    'history': 23, // History
+    'politics': 24, // Politics
+    'art': 25, // Art
+    'celebrities': 26, // Celebrities
+    'animals': 27, // Animals
+    'vehicles': 28, // Vehicles
+    'comics': 29, //  Comics
+    'gadgets': 30, //  Gadgets
+    'anime_manga': 31, //  Japanese Anime & Manga
+    'cartoon_animations': 32 //  Cartoon & Animations
+};
+
+// Set default selected for 10 questions
 quesCountButtons.forEach((btn, idx) => {
-    if (btn.textContent === '5') btn.classList.add('selected');
+    if (btn.textContent === '10') btn.classList.add('selected');
     btn.addEventListener('click', () => {
         quesCountButtons.forEach(b => b.classList.remove('selected'));
         btn.classList.add('selected');
     });
 });
 
-form.addEventListener('submit', (e) => {
+form.addEventListener('submit', async (e) => {
     e.preventDefault();
-    // Get user name
+    
+    // Get user inputs
     userNameValue = userName.value.trim();
-    // Get selected question count
     selectedQuestionCount = parseInt(document.querySelector('.ques-count-buttons button.selected').textContent);
-    // Get selected question category
     quesCategoryValue = quesCategory.value;
 
-    // Prepare questions based on selected category
-    prepareQuestions();
-
-    // Hide the form container and show the question container
+    // Hide the form container immediately
     container.style.display = 'none';
-    quesContainer.style.display = 'flex';
-    showQuestion();
+    
+    // Show loading state
+    showLoadingState();
+
+    try {
+        // Fetch questions from API
+        await fetchQuestions();
+        
+        // Show the question container
+        quesContainer.style.display = 'flex';
+        showQuestion();
+    } catch (error) {
+        console.error('Error fetching questions:', error);
+        showErrorState();
+    }
 });
 
-// Function to prepare questions based on selected category
-function prepareQuestions() {
-    if (quesCategoryValue === 'mixed') {
-        // Create a mixed array from all categories
-        const allQuestions = [
-            ...arts_and_literature,
-            ...film_and_tv,
-            ...food_and_drink,
-            ...general_knowledge,
-            ...geography,
-            ...history,
-            ...music,
-            ...society_and_culture,
-            ...sport_and_leisure
-        ];
+// Function to show loading state
+function showLoadingState() {
+    const loadingHTML = `
+        <div style="text-align: center; padding: 40px;">
+            <div style="font-size: 1.2rem; color: #4ecdc4; margin-bottom: 20px;">
+                Loading questions...
+            </div>
+            <div style="width: 40px; height: 40px; border: 4px solid rgba(78, 205, 196, 0.3); border-top: 4px solid #4ecdc4; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto;"></div>
+        </div>
+        <style>
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+        </style>
+    `;
+    quesContainer.innerHTML = loadingHTML;
+    quesContainer.style.display = 'flex';
+}
 
-        // Shuffle the array
-        shuffleArray(allQuestions);
+// Function to show error state
+function showErrorState() {
+    const errorHTML = `
+        <div style="text-align: center; padding: 40px;">
+            <div style="font-size: 1.2rem; color: #ff6b6b; margin-bottom: 20px;">
+                Failed to load questions. Please try again.
+            </div>
+            <button onclick="location.reload()" style="background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%); color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-size: 1rem;">
+                Retry
+            </button>
+        </div>
+    `;
+    quesContainer.innerHTML = errorHTML;
+    quesContainer.style.display = 'flex';
+}
 
-        // Take only the required number of questions
-        questions = allQuestions.slice(0, selectedQuestionCount);
+// Function to fetch questions from API
+async function fetchQuestions() {
+    const categoryId = CATEGORY_MAP[quesCategoryValue];
+    let apiUrl = `${API_BASE_URL}?amount=${selectedQuestionCount}&type=multiple`;
+    
+    if (categoryId) {
+        apiUrl += `&category=${categoryId}`;
     }
-    else {
-        // Get questions from the selected category
-        const categoryQuestions = eval(quesCategoryValue); // Here eval is used to dynamically access the variable which is defined somewhere else in the code
 
-        // Shuffle the questions
-        shuffleArray(categoryQuestions);
-
-        // Take only the required number of questions
-        questions = categoryQuestions.slice(0, selectedQuestionCount);
+    try {
+        const response = await fetch(apiUrl);
+        const data = await response.json();
+        
+        if (data.response_code === 0) {
+            questions = data.results.map(question => ({
+                question: decodeHtmlEntities(question.question),
+                options: shuffleArray([
+                    ...question.incorrect_answers.map(incorrect => decodeHtmlEntities(incorrect)),
+                    decodeHtmlEntities(question.correct_answer)
+        ]),
+                correct: question.incorrect_answers.length, // Index of correct answer after shuffling
+                category: question.category
+            }));
+        } else {
+            throw new Error('API returned error code: ' + data.response_code);
+        }
+    } catch (error) {
+        console.error('API Error:', error);
+        throw error;
     }
 }
 
+// Function to decode HTML entities
+function decodeHtmlEntities(text) {
+    const textArea = document.createElement('textarea');
+    textArea.innerHTML = text;
+    return textArea.value;
+}
+
 // Function to shuffle array (Fisher-Yates algorithm)
-// This is the most efficient and reliable way to shuffle an array
 function shuffleArray(array) {
-    for (let i = array.length - 1; i > 0; i--) {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
     }
-    return array;
+    return shuffled;
 }
 
 // Function to show current question
 function showQuestion() {
     if (currentQuestionIndex >= questions.length) {
-        // Quiz completed, show results
         showResults();
         return;
     }
 
-    const currentQuestion = questions[currentQuestionIndex];
-
-    // Create HTML for the question
-    quesContainer.innerHTML = `
+    const question = questions[currentQuestionIndex];
+    
+    const questionHTML = `
         <div class="question-header">
-            <div class="question-count">
-                <span>Question ${currentQuestionIndex + 1}/${selectedQuestionCount}</span>
-            </div>
+            <div class="question-count">Question ${currentQuestionIndex + 1} of ${questions.length}</div>
         </div>
         <div class="question">
-            <h2>${currentQuestion.question}</h2>
+            <h2>${question.question}</h2>
         </div>
         <div class="options">
-            ${currentQuestion.options.map((option, index) => `
-                <button class="option" data-index="${index}">
-                    <span class="option-marker">${String.fromCharCode(65 + index)}</span>
-                    <span class="option-text">${option}</span>
-                </button>
+            ${question.options.map((option, index) => `
+                <div class="option" data-index="${index}">
+                    <div class="option-marker">${String.fromCharCode(65 + index)}</div>
+                    <div class="option-text">${option}</div>
+                </div>
             `).join('')}
         </div>
         <div class="navigation">
-            <button class="nav-btn" id="lock-btn">
-                Lock Option
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+            <button class="nav-btn" id="next-btn" disabled>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+                Next Question
             </button>
         </div>
     `;
 
-    // Add event listeners to option buttons
-    const optionsButtons = quesContainer.querySelectorAll('.option');
+    quesContainer.innerHTML = questionHTML;
+
+    // Add event listeners to options
+    const optionElements = quesContainer.querySelectorAll('.option');
+    const nextBtn = quesContainer.querySelector('#next-btn');
     let selectedOption = null;
 
-    optionsButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            // Remove selected class from all options
-            optionsButtons.forEach(btn => btn.classList.remove('selected'));
+    optionElements.forEach((option, index) => {
+        option.addEventListener('click', () => {
+            if (selectedOption !== null) return; // Prevent multiple selections
 
-            // Add selected class to the clicked option
-            button.classList.add('selected');
-            selectedOption = button;
+            selectedOption = index;
+            option.classList.add('selected');
+            nextBtn.disabled = false;
+
+            // Check if answer is correct
+            if (index === question.correct) {
+                score++;
+                option.classList.add('correct');
+            } else {
+                option.classList.add('wrong');
+                // Highlight correct answer
+                optionElements[question.correct].classList.add('correct');
+            }
+
+            // Disable all options
+            optionElements.forEach(opt => opt.style.pointerEvents = 'none');
         });
     });
 
-    // Add event listener to lock button
-    const lockBtn = document.getElementById('lock-btn');
-
-    lockBtn.addEventListener('click', () => {
-        if (selectedOption) {
-            // Disable all option buttons
-            optionsButtons.forEach(button => {
-                button.disabled = true;
-            })
-
-            // Get selected option index
-            const selectedIndex = parseInt(selectedOption.dataset.index);
-
-            // Get correct answer index
-            const correctIndex = questions[currentQuestionIndex].correctAnswer;
-
-            // Check if the selected option is correct
-            if (selectedIndex === correctIndex) {
-                selectedOption.classList.add('correct');
-                score++;
-            }
-            else {
-                selectedOption.classList.add('wrong');
-                optionsButtons[correctIndex].classList.add('correct');
-            }
-
-            // Change lock button to next button
-            lockBtn.innerHTML = `
-                Next
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
-            `;
-            lockBtn.id = 'next-btn';
-
-            //Add event listener to next button
-            lockBtn.addEventListener('click', () => {
-                currentQuestionIndex++;
-                showQuestion();
-            }, { once: true }); // Use { once: true } to ensure the event listener is removed after first use
-        }
-        else {
-            Swal.fire({
-                title: "Warning!",
-                text: "Please select an option first!",
-                icon: "warning",
-                confirmButtonText: "Ok",
-                customClass:{
-                    popup: 'warning-popup',
-                }
-            });
-        }
+    nextBtn.addEventListener('click', () => {
+        currentQuestionIndex++;
+        showQuestion();
     });
 }
 
 // Function to show results
 function showResults() {
-    // Calculate percentage
     const percentage = Math.round((score / questions.length) * 100);
-
-    // Determine result message and class based on percentage
-    let resultMessage, resultClass;
-
+    const categoryName = questions[0]?.category || 'Mixed';
+    
+    let message = '';
+    let messageClass = '';
+    
     if (percentage >= 80) {
-        resultMessage = 'Excellent!';
-        resultClass = 'excellent';
+        message = 'Excellent!';
+        messageClass = 'excellent';
     } else if (percentage >= 60) {
-        resultMessage = 'Good job!';
-        resultClass = 'good';
+        message = 'Good job!';
+        messageClass = 'good';
     } else if (percentage >= 40) {
-        resultMessage = 'Not bad!';
-        resultClass = 'average';
+        message = 'Not bad!';
+        messageClass = 'average';
     } else {
-        resultMessage = 'Keep practicing!';
-        resultClass = 'poor';
+        message = 'Keep practicing!';
+        messageClass = 'poor';
     }
 
-    // Create HTML for results
-    quesContainer.innerHTML = `
+    const resultsHTML = `
         <div class="results">
             <h2>Quiz Results</h2>
             <div class="user-info">
-                <!-- Display the user's name in the results section -->
-                <span class="user-name-display">${userNameValue}</span>
-                
-                <!-- Display the selected category in a readable format: -->
-                <!-- - Replaces underscores with spaces (e.g., "arts_and_literature" → "arts and literature") -->
-                <!-- - Capitalizes the first letter of each word (e.g., "arts and literature" → "Arts And Literature") -->
-                <span class="category-display">${quesCategoryValue.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</span>
+                <div class="user-name-display">${userNameValue}</div>
+                <div class="category-display">${categoryName}</div>
             </div>
-            <div class="score-circle ${resultClass}">
+            <div class="score-circle ${messageClass}">
                 <div class="percentage">${percentage}%</div>
-                <div class="score-text">${score}/${selectedQuestionCount}</div>
+                <div class="score-text">${score}/${questions.length}</div>
             </div>
-            <div class="result-message ${resultClass}">${resultMessage}</div>
+            <div class="result-message ${messageClass}">${message}</div>
             <div class="result-actions">
-                <button id="restart-quiz" class="action-btn">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v6h6"></path><path d="M3 13a9 9 0 1 0 3-7.7L3 8"></path></svg>
+                <button class="action-btn" onclick="restartQuiz()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="23 4 23 10 17 10"></polyline>
+                        <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                    </svg>
                     Restart Quiz
                 </button>
-                <button id="new-quiz" class="action-btn">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h18v18H3zM12 8v8m-4-4h8"></path></svg>
+                <button class="action-btn" onclick="newQuiz()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="9" y1="9" x2="15" y2="15"></line>
+                        <line x1="15" y1="9" x2="9" y2="15"></line>
+                    </svg>
                     New Quiz
                 </button>
             </div>
         </div>
     `;
 
-    // Add event listeners to action buttons
-    const restartQuizBtn = document.getElementById('restart-quiz');
-    const newQuizBtn = document.getElementById('new-quiz');
+    quesContainer.innerHTML = resultsHTML;
+}
 
-    restartQuizBtn.addEventListener('click', () => {
-        // Reset quiz with same settings
-        currentQuestionIndex = 0;
-        score = 0;
-        prepareQuestions();
-        showQuestion();
-    });
+// Function to restart quiz
+function restartQuiz() {
+    currentQuestionIndex = 0;
+    score = 0;
+    questions = [];
+    
+    quesContainer.style.display = 'none';
+    container.style.display = 'block';
+    
+    // Reset form
+    userName.value = '';
+    quesCountButtons.forEach(btn => btn.classList.remove('selected'));
+    quesCountButtons[1].classList.add('selected'); // Select 10 questions by default
+    quesCategory.value = 'mixed';
+}
 
-    newQuizBtn.addEventListener('click', () => {
-        // Reset everything and show form
-        currentQuestionIndex = 0;
-        score = 0;
-        container.style.display = 'block';
-        quesContainer.style.display = 'none';
-    });
+// Function to start new quiz
+function newQuiz() {
+    currentQuestionIndex = 0;
+    score = 0;
+    questions = [];
+    
+    quesContainer.style.display = 'none';
+    container.style.display = 'block';
 }

@@ -28,10 +28,10 @@
             <div class="ques-count">
                 <label for="ques-count">Number of Questions:</label>
                 <div class="ques-count-buttons">
-                    <button type="button">5</button>
                     <button type="button">10</button>
                     <button type="button">15</button>
                     <button type="button">20</button>
+                    <button type="button">25</button>
                 </div>
             </div>
             <div class="ques-category">
@@ -39,15 +39,30 @@
                 <select name="ques-category" id="ques-category">
                     <!-- Dropdown options for selecting quiz category -->
                     <option value="mixed" selected>Mixed</option>
-                    <option value="arts_and_literature">Arts and Literature</option>
-                    <option value="film_and_tv">Film and TV</option>
-                    <option value="food_and_drink">Food and Drink</option>
                     <option value="general_knowledge">General Knowledge</option>
+                    <option value="books">Books</option>
+                    <option value="film">Film</option>
+                    <option value="music">Music</option>
+                    <option value="musicals_theatres">Musicals & Theatres</option>
+                    <option value="television">Television</option>
+                    <option value="video_games">Video Games</option>
+                    <option value="board_games">Board Games</option>
+                    <option value="science_nature">Science & Nature</option>
+                    <option value="science_computers">Science: Computers</option>
+                    <option value="science_mathematics">Science: Mathematics</option>
+                    <option value="mythology">Mythology</option>
+                    <option value="sports">Sports</option>
                     <option value="geography">Geography</option>
                     <option value="history">History</option>
-                    <option value="music">Music</option>
-                    <option value="society_and_culture">Society and Culture</option>
-                    <option value="sport_and_leisure">Sport and Leisure</option>
+                    <option value="politics">Politics</option>
+                    <option value="art">Art</option>
+                    <option value="celebrities">Celebrities</option>
+                    <option value="animals">Animals</option>
+                    <option value="vehicles">Vehicles</option>
+                    <option value="comics">Comics</option>
+                    <option value="gadgets">Science: Gadgets</option>
+                    <option value="anime_manga">Anime & Manga</option>
+                    <option value="cartoon_animations">Cartoon & Animations</option>
                 </select>
             </div>
             <!-- Button to start the quiz after user input -->
@@ -58,7 +73,6 @@
     <!-- Dynamic container for quiz questions and results -->
     <div class="ques-container"></div>
 
-    <script src="questions.js"></script>
     <script src="script.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </body>
