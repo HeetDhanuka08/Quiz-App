@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Wizard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="animated-bg">
+        <span></span><span></span><span></span><span></span>
+        <span></span><span></span><span></span><span></span>
+        <span></span><span></span><span></span><span></span>
+        <div class="animated-shape shape1"></div>
+        <div class="animated-shape shape2"></div>
+        <div class="animated-shape shape3"></div>
+    </div>
+    <div class="container">
+        <h1>Welcome to Quiz Wizard</h1>
+        <!-- Form for user input to start the quiz -->
+        <form action="" class="user-form">
+            <div class="user-name">
+                <label for="user-name">Enter your name:</label>
+                <input type="text" id="user-name" name="user-name" placeholder="Your Name" required>
+            </div>
+            <div class="ques-count">
+                <label for="ques-count">Number of Questions:</label>
+                <div class="ques-count-buttons">
+                    <button type="button">5</button>
+                    <button type="button">10</button>
+                    <button type="button">15</button>
+                    <button type="button">20</button>
+                </div>
+            </div>
+            <div class="ques-category">
+                <label for="ques-category">Select question category:</label>
+                <select name="ques-category" id="ques-category">
+                    <!-- Dropdown options for selecting quiz category -->
+                    <option value="mixed" selected>Mixed</option>
+                    <option value="arts_and_literature">Arts and Literature</option>
+                    <option value="film_and_tv">Film and TV</option>
+                    <option value="food_and_drink">Food and Drink</option>
+                    <option value="general_knowledge">General Knowledge</option>
+                    <option value="geography">Geography</option>
+                    <option value="history">History</option>
+                    <option value="music">Music</option>
+                    <option value="society_and_culture">Society and Culture</option>
+                    <option value="sport_and_leisure">Sport and Leisure</option>
+                </select>
+            </div>
+            <!-- Button to start the quiz after user input -->
+            <button type="submit" id="start-quiz">Start Quiz</button>
+        </form>
+    </div>
+
+    <!-- Dynamic container for quiz questions and results -->
+    <div class="ques-container"></div>
+
+    <script src="questions.js"></script>
+    <script src="script.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</body>
+
+</html>
