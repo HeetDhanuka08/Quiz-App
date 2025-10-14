@@ -14,6 +14,9 @@ let quesCategoryValue = 'mixed';
 let currentQuestionIndex = 0;
 let score = 0;
 let questions = [];
+let timerEnabled = false;
+let timeLeft = 15;
+let timerInterval = null;
 
 // API Configuration
 const API_BASE_URL = 'https://opentdb.com/api.php';
@@ -61,6 +64,7 @@ form.addEventListener('submit', async (e) => {
     userNameValue = userName.value.trim();
     selectedQuestionCount = parseInt(document.querySelector('.ques-count-buttons button.selected').textContent);
     quesCategoryValue = quesCategory.value;
+    timerEnabled = document.getElementById('timer-toggle').checked;
 
     // Hide the form container immediately
     container.style.display = 'none';
@@ -166,16 +170,86 @@ function shuffleArray(array) {
     return shuffled;
 }
 
+// Timer functions
+function startTimer() {
+    if (!timerEnabled) return;
+    
+    timeLeft = 15;
+    updateTimerDisplay();
+    
+    timerInterval = setInterval(() => {
+        timeLeft--;
+        updateTimerDisplay();
+        
+        if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            handleTimerExpired();
+        }
+    }, 1000);
+}
+
+function stopTimer() {
+    if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+    }
+}
+
+function updateTimerDisplay() {
+    const timerDisplay = document.querySelector('.timer-text');
+    if (timerDisplay) {
+        timerDisplay.textContent = timeLeft;
+        
+        // Add warning classes based on time left
+        timerDisplay.classList.remove('timer-warning', 'timer-critical');
+        if (timeLeft <= 5) {
+            timerDisplay.classList.add('timer-critical');
+        } else if (timeLeft <= 8) {
+            timerDisplay.classList.add('timer-warning');
+        }
+    }
+}
+
+function handleTimerExpired() {
+    // Auto-submit the current question
+    const nextBtn = document.querySelector('#next-btn');
+    if (nextBtn && !nextBtn.disabled) {
+        nextBtn.click();
+    } else if (nextBtn && nextBtn.disabled) {
+        // If no option selected, mark as wrong and move to next
+        currentQuestionIndex++;
+        showQuestion();
+    }
+}
+
 // Function to show current question
 function showQuestion() {
     if (currentQuestionIndex >= questions.length) {
+        stopTimer();
         showResults();
         return;
     }
 
     const question = questions[currentQuestionIndex];
     
+    // Reset timer for new question
+    if (timerEnabled) {
+        stopTimer();
+        startTimer();
+    }
+    
+    const timerHTML = timerEnabled ? `
+        <div class="timer-display">
+            <svg class="timer-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12,6 12,12 16,14"></polyline>
+            </svg>
+            <span class="timer-text">15</span>
+        </div>
+    ` : '';
+    
     const questionHTML = `
+        ${timerHTML}
         <div class="question-header">
             <div class="question-count">Question ${currentQuestionIndex + 1} of ${questions.length}</div>
         </div>
@@ -214,6 +288,9 @@ function showQuestion() {
             selectedOption = index;
             option.classList.add('selected');
             nextBtn.disabled = false;
+
+            // Stop timer when answer is selected
+            stopTimer();
 
             // Check if answer is correct
             if (index === question.correct) {
@@ -298,6 +375,7 @@ function restartQuiz() {
     currentQuestionIndex = 0;
     score = 0;
     questions = [];
+    stopTimer();
     
     quesContainer.style.display = 'none';
     container.style.display = 'block';
@@ -307,6 +385,7 @@ function restartQuiz() {
     quesCountButtons.forEach(btn => btn.classList.remove('selected'));
     quesCountButtons[1].classList.add('selected'); // Select 10 questions by default
     quesCategory.value = 'mixed';
+    document.getElementById('timer-toggle').checked = false;
 }
 
 // Function to start new quiz
@@ -314,6 +393,7 @@ function newQuiz() {
     currentQuestionIndex = 0;
     score = 0;
     questions = [];
+    stopTimer();
     
     quesContainer.style.display = 'none';
     container.style.display = 'block';
